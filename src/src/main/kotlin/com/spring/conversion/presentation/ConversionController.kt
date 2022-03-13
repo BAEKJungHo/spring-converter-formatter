@@ -17,8 +17,7 @@ class ConversionController {
 
     @InitBinder
     fun initBinder(webDataBinder: WebDataBinder) {
-        webDataBinder.registerCustomEditor(Level::class.java, LevelPropertyEditor())
-        webDataBinder.registerCustomEditor(Int::class.java, "age", MaxMinPropertyEditor(0, 200))
+//        webDataBinder.registerCustomEditor(Int::class.java, "age", MaxMinPropertyEditor(0, 200))
     }
 
     /** endPoint /charset?charset=UTF-8 */
