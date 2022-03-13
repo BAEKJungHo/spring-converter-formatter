@@ -36,6 +36,62 @@ public void hello(@RequestParam Charset charset, Model model) {
 }
 ```
 
+### PropertyEditor 에서 제공하는 메서드
+
+> HTTP 요청 파라미터와 같은 문자열은 스트링 타입으로 서블릿에서 가져온다.
+
+- __String to Object__
+  - setAsText() 로 String 타입의 문자열을 넣고 getValue() 로 변환된 오브젝트를 가져온다.
+- __Object to String__
+  - setValue() 로 오브젝트를 넣고 getAsText() 로 변환된 문자열을 가져온다.
+
+따라서, 커스텀 프로퍼티 에디터를 만들 때는, setAsText(), getAsText() 부분만 손보면 된다.
+
+### 커스텀 프로퍼티 에디터
+
+> PropertyEditor 인터페이스를 직접 구현하기보다는 기본 구현이 되어있는 PropertyEditorSupport 클래스를 상속해서 필요한 메서드만 오버라이딩 하는게 낫다.
+
+```kotlin
+class LevelPropertyEditor: PropertyEditorSupport() {
+
+    override fun getAsText(): String {
+        // this.value -> setValue 에 의해 저장된 Level 타입의 오브젝트를 가져와서 값을 문자로 변환한다.
+        return ((this.value as Level).intValue().toString())
+    }
+
+    override fun setAsText(text: String?) {
+        this.value = text?.trim()?.let { Level.valueOf(it.toInt()) }
+    }
+}
+```
+
+만든 커스텀 프로퍼티 에디터가 스프링 MVC 에서 동작하게 하려면 `@InitBinder` 를 사용하면 된다.
+
+## @InitBinder
+
+- __컨트롤러 메서드에서 바인딩이 어떻게 일어날까?__
+  - @Controller 핸들러 메서드를 호출해줄 책임이 있는 `AnnotationMethodHandlerAdapter` 는 @RequestParam, @ModelAttribute 등 HTTP 요청을 파라미터 변수에 바인딩 해주는 작업이 필요한 어노테이션을 만나면 먼저 `WebDataBinder` 라는 것을 만든다.
+- __WebDataBinder__
+  - HTTP 요청으로부터 가져온 문자열을 파라미터 타입의 오브젝트로 변환해주는 기능이 있다. 이때 `PropertyEditor` 를 사용하는 것이다.
+  - 따라서, 커스텀 프로퍼티 에디터를 사용하기 위해서는 WebDataBinder 에 등록해줘야 한다.
+  - WebDataBinder 는 커스텀 프로퍼티 에디터가 있으면 먼저 적용하고, 적절한 프로퍼티 에디터가 없다면 그때 스프링에서 제공하는 디폴트 프로퍼티 에디터중 하나를 사용하게 된다.
+
+```kotlin
+@RestController
+class ConversionController {
+
+    @InitBinder
+    fun initBinder(webDataBinder: WebDataBinder) {
+        webDataBinder.registerCustomEditor(Level::class.java, LevelPropertyEditor())
+    }
+    
+    @GetMapping("/level")
+    fun levelCustomEditor(@RequestParam level: Level): Int {
+        return level.intValue()
+    }
+}
+```
+
 ## References
 
 - 토비의 스프링3
