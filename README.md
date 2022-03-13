@@ -1,5 +1,3 @@
-# Spring Converter and Formatter
-
 # 모델 바인딩 및 검증
 
 핸들러 메서드에 @ModelAttribute 가 지정되면 다음과 같은 일이 일어난다.
@@ -103,6 +101,59 @@ class ConversionController {
 
 __프로토타입 스코프 빈은 매번 빈 오브젝트를 요청해서 새로운 오브젝트를 가져올 수 있으면서 DI 도 가능하다.__
 
+```java
+@Component
+@Scope("prototype")
+public class CodePropertyEditor extends PropertyEditorSupport{
+  @Atuworied codeService;
+
+  @Override
+	public void setAsText(String text) throws IllegalArgumentException {
+		Code code = codeService.getCode(Integer.valueOf(text));
+
+		this.setValue(code);
+	}
+}
+```
+```java
+@Controller
+public class UserController{
+  @Inject Provider<CodePropertyEditor> codePropertyEditorProvider;
+
+  @InitBinder
+  public void initBinder(WebDataBinder dataBinder){
+    dataBinder.registerCustomEditor(Code.class, codePropertyEditorProvider.get());
+  }
+
+  @RequestMapping("/user", method=RequestMethod.POST)
+  public String userAdd(@ModelAttribute User user){
+    // ...
+  }
+}
+```
+
+- 이 방식의 장점은 항상 완전한 도메인 오브젝트를 리턴해주므로, 앞서 제기했던 위험이 없어진다.
+- 단점으로는 매번 DB에서 조회를 해야하므로 성능에 조금 부담을 주는 단점이 있다.
+- JPA 와 같이 엔티티 단위의 캐싱 기법이 발달한 기술을 사용할 경우, DB에서 조회하는 대신 메모리에서 바로 읽어올 수 있으므로 DB 부하에 대한 걱정은 하지 않아도 된다.
+
+# Converter, Formatter
+
+PropertyEditor는 근본적인 단점이 있다. __상태를 가지고 있으므로 싱글톤으로 등록할 수 없고, 항상 새로운 오브젝트를 만들어야 한다는 점이다.__ 물론 생성되는 오브젝트 자체가 가볍기 때문에 크게 문제될 것은 없지만, __싱글톤 서비스 오브젝트 중심의 스프링__ 과는 잘 어울리지 않는다. 특히, 빈으로 등록해서 사용할 떄는 반드시 `프로토타입 스코프`를 사용해야하기 때문에 불편하다.
+
+스프링 3.0이후로 이러한 PropertyEdito r의 단점을 보완해주는 `Converter 라는 타입 변환 API` 가 등장하였다. Converter 는 PropertyEditor 와 달리 변환과정에서 메서드가 한번만 호출된다.
+__즉, 상태를 가지지 않는다는 뜻이고, 싱글톤으로 등록할 수 있다는 뜻이다.__
+
+## Converter 구현
+
+- Converter 인터페이스
+
+```java
+public interface Converter<S, T>{
+  T convert(s source);
+}
+```
+
 ## References
 
 - 토비의 스프링3
+- https://joont92.github.io/spring/%EB%AA%A8%EB%8D%B8-%EB%B0%94%EC%9D%B8%EB%94%A9%EA%B3%BC-%EA%B2%80%EC%A6%9D/
