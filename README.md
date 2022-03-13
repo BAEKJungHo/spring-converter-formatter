@@ -222,7 +222,7 @@ class WebMvcConfig: WebMvcConfigurer {
 }
 ```
 
-# 포맷터 - Formatter
+# Formatter
 
 - 웹 애플리케이션에서 객체를 문자로, 문자를 객체로 변환하는 예
   - 화면에 숫자를 출력해야 하는데, Integer String 출력 시점에 숫자 1000 문자 "1,000" 이렇게 1000 단위에 쉼표를 넣어서 출력하거나, 또는 "1,000" 라는 문자를 1000 이라는 숫자로 변경해야 한다.
