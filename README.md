@@ -1,2 +1,1 @@
-# spring-converter-formatter
-Spring Converter and Formatter
+# Spring Converter and Formatter
