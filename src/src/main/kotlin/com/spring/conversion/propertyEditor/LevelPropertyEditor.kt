@@ -11,6 +11,7 @@ class LevelPropertyEditor: PropertyEditorSupport() {
     }
 
     override fun setAsText(text: String?) {
+        // 파라미터로 제공된 문자열을 Level 의 valueOf 메서드를 이용해 문자열로 변환한 뒤에 저장한다.
         this.value = text?.trim()?.let { Level.valueOf(it.toInt()) }
     }
 }
