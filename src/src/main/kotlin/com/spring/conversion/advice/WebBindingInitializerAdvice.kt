@@ -15,6 +15,6 @@ class WebBindingInitializerAdvice: WebBindingInitializer {
 
     @InitBinder
     override fun initBinder(binder: WebDataBinder) {
-        binder.registerCustomEditor(Level::class.java, LevelPropertyEditor())
+//        binder.registerCustomEditor(Level::class.java, LevelPropertyEditor())
     }
 }
